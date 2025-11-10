@@ -1,3 +1,11 @@
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+
+app.listen(port, () => console.log(`Server running on port ${port}`));
+
 // Books for bookstore API
 let books = [
     {
@@ -32,13 +40,52 @@ let books = [
     'DELETE /api/books/:id': 'Delete a book'
 */
 
+app.get('/api/books', (req, res) => {  
+  res.json(books);
+});
 
+app.get('/api/books/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const book = books.find(b => b.id === id);
+  if (!book) return res.status(404).json({ message: 'Book not found' });
+  res.json(book);
+});
 
+app.post('/api/books', (req, res) => {
+  const { title, author, genre, copiesAvailable } = req.body;
 
+  const newBook = {
+    id: books.length + 1,
+    title,
+    author,
+    genre,
+    copiesAvailable,
+  };
+  books.push(newBook);
+  res.status(201).json(newBook);
+});
 
+app.put('/api/books/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const book = books.find(b => b.id === id);
+  if (!book) return res.status(404).json({ message: 'Book not found' });
 
+  const { title, author, genre,  copiesAvailable } = req.body;
+  if (title) book.title = title;
+  if (author) book.author = author;
+  if (genre) book.genre = genre;
+  if (copiesAvailable !== undefined) book.copiesAvailable = copiesAvailable;
 
+  res.json(book);
+});
 
+app.delete('/api/books/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = books.findIndex(b => b.id === id);
+  if (index === -1) return res.status(404).json({ message: 'Book not found' });
 
+  const deletedBook = books.splice(index, 1);
+  res.json(deletedBook[0]);
+});
 
-
+module.exports = app;
